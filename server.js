@@ -224,14 +224,13 @@ app.post("/pub", async (req, res, next) => {
   res.end();
 });
 
-//패턴을 이용한 퍼블리시 사용.
-app.post("pPub", async (req, res, next) => {
-  await publisher.publish(`req`, "Hello pattern subscribe");
-});
+// app.post("pub", async (req, res, next) => {
+//   await publisher.publish(`req`, "Hello pattern subscribe");
+// });
 
 //FLOW14 클라이언트로 부터 SSE 요청받음
 app.get("/message/:city/:district", async function (req, res) {
-  //FLOW15 최초요청시 res.writeHead를 아래와 같이 보내서 노드와 관제웹의  연결을 유지시킴
+  //FLOW15 관제웹의 SSE연결을 위한 최초요청시에 res.writeHead를 아래와 같이 보내서 노드서버와 관제웹의  연결을 유지시킴
   res.writeHead(200, {
     Connection: "keep-alive",
     "Content-Type": "text/event-stream",
@@ -283,35 +282,59 @@ io.on("connection", (socket) => {
 
   //FLOW6 클라이언트로부터 메시지 수신 FLOW7은 Subscriber7에 있습니다.
   socket.on("currentGps", (data) => {
-    console.log("배달라이더분들한태온 gps정보 -> ", data[0]);
+    console.log(data);
+    console.log(typeof data);
+
+    let parsedJsonData = JSON.parse(data);
+    console.log(parsedJsonData);
+    let 도시 = parsedJsonData["도시"];
+    let 지역구 = parsedJsonData["지역구"];
+    let 동 = parsedJsonData["동"];
+    let gps = parsedJsonData["gps"];
+    let 라이더이름 = parsedJsonData["라이더이름"];
+    console.log("배달라이더분들한태온 gps정보 -> ", gps);
     //data == gps임 gps가 1이면 범어동
-    if (data == 1) {
-      (async (publisher) => {
-        const client = publisher.redisClient;
-        const localSubscriber = client.duplicate();
 
-        await localSubscriber.connect();
+    (async (publisher) => {
+      const client = publisher.redisClient;
+      const localSubscriber = client.duplicate();
 
-        await publisher.publish(
-          "/대구시/수성구/범어동", // <--- /대구시/수성구/범어동 == 채널임 , 이거 전체가 하나의 체널임.
-          "대구시,수성구,범어동 라이더임~~" // <----- /대구시/수성구/범어동(채널) 에 보낼 메세지임.
-        );
-        // 함수선언끝
-      })(publisher); //여기서 함수 실행
-    } else {
-      (async (publisher) => {
-        const client = publisher.redisClient;
-        const localSubscriber = client.duplicate();
+      await localSubscriber.connect();
 
-        await localSubscriber.connect();
+      await publisher.publish(
+        `/${도시}/${지역구}/${동}`, // <--- ex) /대구시/수성구/범어동 == 채널임 , 이거 전체가 하나의 체널임.
+        `라이더 지역정보 : ${도시}_${지역구}_${동} 라이더이름 : ${라이더이름}} 라이더 gps : ${gps}` // <----- /대구시/수성구/범어동(채널) 에 보낼 메세지임.
+      );
+      // 함수선언끝
+    })(publisher);
 
-        await publisher.publish(
-          "/서울시/종로구/익선동", // line 286,287 설명그대로입니다!
-          "서울시,종로구,익선동 라이더입니다~"
-        );
-        // 함수선언끝
-      })(publisher); //여기서 함수 실행
-    }
+    // if (data == 1) {
+    //   (async (publisher) => {
+    //     const client = publisher.redisClient;
+    //     const localSubscriber = client.duplicate();
+
+    //     await localSubscriber.connect();
+
+    //     await publisher.publish(
+    //       "/대구시/수성구/범어동", // <--- /대구시/수성구/범어동 == 채널임 , 이거 전체가 하나의 체널임.
+    //       "대구시,수성구,범어동 라이더임~~" // <----- /대구시/수성구/범어동(채널) 에 보낼 메세지임.
+    //     );
+    //     // 함수선언끝
+    //   })(publisher); //여기서 함수 실행
+    // } else {
+    //   (async (publisher) => {
+    //     const client = publisher.redisClient;
+    //     const localSubscriber = client.duplicate();
+
+    //     await localSubscriber.connect();
+
+    //     await publisher.publish(
+    //       "/서울시/종로구/익선동", // line 286,287 설명그대로입니다!
+    //       "서울시,종로구,익선동 라이더입니다~"
+    //     );
+    //     // 함수선언끝
+    //   })(publisher); //여기서 함수 실행
+    // }
 
     // connection 콜백함수 끝
   });

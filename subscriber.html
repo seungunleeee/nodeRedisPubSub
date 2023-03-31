@@ -52,13 +52,13 @@
   <script >// 로그인 시스템 대신 임시 방편
 
   //FLOW7 subscriber.html 관제를 할 지역을 먼저 선정함.
-    let username = prompt("근무하시는 도시를 입력하세요 ex) 대구시 , 서울시..");
-    let roomNum = prompt("근무하시는 구를 입력하세요  ex) 북구, 수성구 ,  강남구, 마포구..");
+    let 도시 = prompt("관제할 도시를 입력하세요 ex) 대구시 , 서울시..");
+    let 지역구 = prompt("관제할 구를 입력하세요  ex) 북구, 수성구 ,  강남구, 마포구..");
 
 
 
     
-    document.querySelector("#username").innerHTML = username;
+    // document.querySelector("#username").innerHTML = username;
 
 //node 요청test
     // function init_test(){
@@ -99,14 +99,14 @@
 
     //FLOW8 FLOW7에서 적은 관제 지역을 구독할것이라고 노드에 요청.   FLOW9은 server.js에 있습니다.
     function psubscribe(){
-      let chat = {
-        sender: username,
-        roomNum: roomNum
+      let data = {
+        sender: 도시,
+        roomNum: 지역구
       };
     
       fetch("http://localhost:8080/psub", {
         method: "post", //http post 메서드 (새로운 데이터를 write)
-        body: JSON.stringify(chat), // JS -> JSON
+        body: JSON.stringify(data), // JS -> JSON
         headers: new Headers({
           "Content-Type": "application/json; charset=utf-8"
         })
@@ -137,7 +137,7 @@
     
     //FLOW13 SSE연결 성공 후
     // FLOW14는 server.js에 있습니다.
-    const testEventSource  = new EventSource(`http://localhost:8080/message/${username}/${roomNum}`);
+    const testEventSource  = new EventSource(`http://localhost:8080/message/${도시}/${지역구}`);
   //FLOW18 데이터전달확인
     testEventSource.addEventListener('test',function(e)
     {

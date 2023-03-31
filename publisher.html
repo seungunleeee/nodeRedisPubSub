@@ -53,9 +53,10 @@
   <script >
     //FLOW1
     // 라이더의 위치 및정보 입력
-    let city = prompt("근무하시는 도시를 입력하세요 ex) 대구시 , 서울시..");
-    let district = prompt("근무하시는 구를 입력하세요  ex) 북구, 수성구 ,  강남구, 마포구..");
-    let publisherId = prompt("근무하시는 동을 입력하세요 ex) 신천동, 철산동 , 이촌동 등등.. ") 
+    let 도시 = prompt("근무하시는 도시를 입력하세요 ex) 대구시 , 서울시..");
+    let 지역구 = prompt("근무하시는 구를 입력하세요  ex) 북구, 수성구 ,  강남구, 마포구..");
+    let 동 = prompt("근무하시는 동을 입력하세요 ex) 신천동, 철산동 , 이촌동 등등.. ");
+    let 라이더이름  = prompt("성함 한번 써주세요..");
     // library에서 가져오는듯.
 
     //FLOW2
@@ -73,11 +74,20 @@
     // publisherId 가 범어동인 경우와 그외로 단순하게 테스트 예제임
     // ex) 범어동일 경우 3초마다 gps 수신 . gps는 1로 가정
     // ex) 범어동이 아닐경우 3초마다 gps 수신 , gps 는 2로가정    FLOW4 는 server.js에 있습니다.
-    if(publisherId == "범어동")
-    {window.setInterval( ()=>{socket.emit('currentGps', `${1}`);} , 3000);}
-    else{
-      window.setInterval( ()=>{socket.emit('currentGps', `${2}`);} , 3000);
-    }
+    let gps = 123123
+    let 서버로보낼데이터 ={};
+    서버로보낼데이터.도시 = 도시;
+    서버로보낼데이터.지역구 = 지역구;
+    서버로보낼데이터.동 =동;
+    서버로보낼데이터.라이더이름 = 라이더이름;
+    서버로보낼데이터.gps = gps;
+    window.setInterval( ()=>{
+      서버로보낼데이터['gps']=서버로보낼데이터['gps']+1;
+      socket.emit('currentGps',
+      JSON.stringify(서버로보낼데이터)
+      );
+    } , 3000);
+    
    
     document.querySelector("#username").innerHTML = username;
 
